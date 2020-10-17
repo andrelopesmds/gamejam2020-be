@@ -9,9 +9,10 @@
 <body>
     <div class="container">
         <div class="py-5 text-center">
-            <h2>Basic Web socket</h2>
-            <p class="lead">Sample of basic WebSocket broadcast - without STOMP & SockJS.</p>
+            <h2>Game Jam 2020</h2>
+            <p class="lead">Be the villain!</p>
         </div>
+       
         <div class="row">
             <div class="col-md-6">
                 <div class="row mb-3">
@@ -27,7 +28,7 @@
                 </div>
                 <div class="row mb-3">
                     <div class="input-group" id="sendmessage" style="display: none;">
-                        <input type="text" id="message" class="form-control" placeholder="Message">
+                        <input type="text" id="message" class="form-control" placeholder="Free form event...">
                         <div class="input-group-append">
                             <button id="send" class="btn btn-primary" onclick="send()">Send</button>
                         </div>
@@ -44,14 +45,16 @@
                     </div>
                 </div>
             </div>
-            <div class="row mb-3"> 
-                <table id="playerlist">
-                        <tr><th>Players</th></tr>
-                </table>
-            </div>
+            
             <div class="col-md-6">
                 <div id="content"></div>
             </div>
+        </div>
+        <div id="listing" style="display: none;" class="row mb-3"> 
+            <table >
+                <tr><th></th></tr>
+                <div id="playerList"></div>
+            </table>
         </div>
     </div>
 
@@ -63,9 +66,11 @@
             $("#connect").prop("disabled", connected);
             $("#disconnect").prop("disabled", !connected);
             if (connected) {
+                $("#listing").show();
                 $("#events").show();
                 $("#sendmessage").show();
             } else {
+                $("#listing").hide();
                 $("#events").hide();
                 $("#sendmessage").hide();
             }
@@ -73,24 +78,23 @@
 
         function connect() {
             /*<![CDATA[*/
-            var url = /*[['ws://'+${#httpServletRequest.serverName}+':'+${#httpServletRequest.serverPort}+@{/web-socket}]]*/ 'ws://localhost:8080/web-socket';
+            var url = /*[['ws://'+${#httpServletRequest.serverName}+':'+${#httpServletRequest.serverPort}+@{/web-socket}]]*/ 'ws://31.220.7.239:8080/web-socket';
             /*]]>*/
             ws = new WebSocket(url);
             ws.onopen = function () {
-                showBroadcastMessage('<div class="alert alert-success">Connected to server</div>');
+                //showBroadcastMessage('<div class="alert alert-success">Connected to server</div>');
                 ws.send("D#KDWDLKEWRK#WRXXXXXXXX-IMWEBPAGE");
             };
             ws.onmessage = function (data) {
-                /*if(data.data.includes("PLAYERS-")){
+                if(data.data.includes("PLAYERS-")){
                     let playerArr = data.data.split("PLAYERS-")[1].split(",");
-                    let listOfPlayers = '<table id="playerlist"><tr><th>Players</th></tr>';
+                    let listOfPlayers = '<tr><th>Players</th></tr>';
                     for(let i = 0; i < playerArr.length; i++){
                         listOfPlayers += createTableRow(playerArr[i]);   
                     }
                     updatePlayerList(listOfPlayers);
                     return;
-                }*/
-                //showBroadcastMessage(createTextNode(data.data));
+                }
                 console.log("Message incoming..." , data.data);
             };
             setConnected(true);
@@ -99,7 +103,7 @@
         function disconnect() {
             if (ws != null) {
                 ws.close();
-                showBroadcastMessage('<div class="alert alert-warning">Disconnected from server</div>');
+                //showBroadcastMessage('<div class="alert alert-warning">Disconnected from server</div>');
             }
             setConnected(false);
         }
@@ -114,7 +118,7 @@
         }
 
         function createTableRow(msg){
-            return '<tr><td>' +msg+'</td></tr>'
+            return '<tr><td>' +msg.replace("[","").replace("]","")+'</td></tr>'
         }
 
         function createTextNode(msg) {

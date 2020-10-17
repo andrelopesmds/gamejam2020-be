@@ -29,6 +29,7 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession wsSession, CloseStatus status) throws Exception {
         sessions.removeIf((e) -> wsSession.equals(e.getWsSession()));
         super.afterConnectionClosed(wsSession, status);
+        broadCastNewPlayers();
     }
  
     @Override
