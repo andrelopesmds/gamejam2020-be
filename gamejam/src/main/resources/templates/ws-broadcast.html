@@ -33,6 +33,21 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mb-3">
+                    <div class="input-group" id="events" style="display: none;">
+                        <button id="bomb" class="btn btn-outline-secondary" onclick="sendEvent('BOMB')">Bomb!</button>
+                        <button id="hspd" class="btn btn-outline-secondary" onclick="sendEvent('HIGH_SPEED')">High Speed!</button>
+                        <button id="nspd" class="btn btn-outline-secondary" onclick="sendEvent('NORMAL_SPEED')">Normal Speed!</button>
+                        <button id="lspd" class="btn btn-outline-secondary" onclick="sendEvent('LOW_SPEED')">Low Speed!</button>
+                        <button id="lavaon" class="btn btn-outline-secondary" onclick="sendEvent('LAVA_ON')">Lava On!</button>
+                        <button id="lavaoff" class="btn btn-outline-secondary" onclick="sendEvent('LAVA_OFF')">Lava Off!</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3"> 
+                <table id="playerlist">
+                        <tr><th>Players</th></tr>
+                </table>
             </div>
             <div class="col-md-6">
                 <div id="content"></div>
@@ -48,8 +63,10 @@
             $("#connect").prop("disabled", connected);
             $("#disconnect").prop("disabled", !connected);
             if (connected) {
+                $("#events").show();
                 $("#sendmessage").show();
             } else {
+                $("#events").hide();
                 $("#sendmessage").hide();
             }
         }
@@ -61,9 +78,20 @@
             ws = new WebSocket(url);
             ws.onopen = function () {
                 showBroadcastMessage('<div class="alert alert-success">Connected to server</div>');
+                ws.send("D#KDWDLKEWRK#WRXXXXXXXX-IMWEBPAGE");
             };
             ws.onmessage = function (data) {
-                showBroadcastMessage(createTextNode(data.data));
+                /*if(data.data.includes("PLAYERS-")){
+                    let playerArr = data.data.split("PLAYERS-")[1].split(",");
+                    let listOfPlayers = '<table id="playerlist"><tr><th>Players</th></tr>';
+                    for(let i = 0; i < playerArr.length; i++){
+                        listOfPlayers += createTableRow(playerArr[i]);   
+                    }
+                    updatePlayerList(listOfPlayers);
+                    return;
+                }*/
+                //showBroadcastMessage(createTextNode(data.data));
+                console.log("Message incoming..." , data.data);
             };
             setConnected(true);
         }
@@ -76,13 +104,25 @@
             setConnected(false);
         }
 
+        function sendEvent(event){
+            ws.send(event);
+        }
+
         function send() {
             ws.send(escape($("#message").val()));
             escape($("#message").val(""));
         }
 
+        function createTableRow(msg){
+            return '<tr><td>' +msg+'</td></tr>'
+        }
+
         function createTextNode(msg) {
             return '<div class="alert alert-info">' + msg + '</div>';
+        }
+
+        function updatePlayerList(message){
+            $("#playerList").html(message);
         }
 
         function showBroadcastMessage(message) {

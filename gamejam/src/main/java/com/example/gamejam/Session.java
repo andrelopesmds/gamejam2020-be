@@ -30,4 +30,14 @@ public class Session {
 
     private String name;
 
+    private Boolean isWebPage = false;
+
+    public void setIsWebPage(Boolean isWebPage){
+        this.isWebPage = isWebPage;
+    }
+
+    public Boolean getIsWebPage(){
+        return this.isWebPage;
+    }
+
 }

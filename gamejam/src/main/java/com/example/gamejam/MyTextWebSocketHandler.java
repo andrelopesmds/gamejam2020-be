@@ -2,6 +2,7 @@ package com.example.gamejam;
  
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.slf4j.Logger;
@@ -29,32 +30,93 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
         sessions.removeIf((e) -> wsSession.equals(e.getWsSession()));
         super.afterConnectionClosed(wsSession, status);
     }
-
-    
  
     @Override
     protected void handleTextMessage(WebSocketSession wsSession, TextMessage message) throws Exception {
         super.handleTextMessage(wsSession, message);
-        String buffer = message.toString();
+        String buffer = message.getPayload();
+
+        Session session = getMatchingSession(wsSession);
+        if(session == null){
+            LOGGER.error("session cannot be found from the cache...", wsSession);
+            return;
+        }
         if(buffer.contains("open-")){
-            for(Session session : sessions){
-                if(session.equals(wsSession)){
-                    String[] name = buffer.split("open-");
-                    if(name.length > 1){
-                        session.setName(name[1]);
-                        break;
-                    }
-                   
-                }
+            String[] name = buffer.split("open-");
+            if(name.length > 1){
+                session.setName(name[1]);
             }
+            broadCastNewPlayers();
+            return;
+        }
+        else if (buffer.equals("D#KDWDLKEWRK#WRXXXXXXXX-IMWEBPAGE")){
+            session.setIsWebPage(true);
+            return;
+        } else if (buffer.equals("WEBPAGE-REQUEST-PLAYERS") && session.getIsWebPage() == true){
+            broadCastNewPlayers();
+            return;
+            
         }
         
-        sessions.forEach(session -> {
+        broadCastEveryone(message);
+    }
+
+    private void broadCastNewPlayers(){
+        broadCastWebPages(new TextMessage("PLAYERS-" + getActiveSessions()));
+    }
+
+    private void broadCastWebPages(TextMessage message){
+        sessions.forEach(ses -> {
+            if(ses.getIsWebPage() == true){
+                try {
+                    LOGGER.debug("SENDING ", message);
+                    ses.getWsSession().sendMessage(message);
+                } catch (IOException e) {
+                    LOGGER.error("Error occurred.", e);
+                }
+            }
+        });
+    }
+
+    private void broadCastEveryone(TextMessage message){
+        sessions.forEach(ses -> {
             try {
-                session.getWsSession().sendMessage(message);
+                ses.getWsSession().sendMessage(message);
             } catch (IOException e) {
                 LOGGER.error("Error occurred.", e);
             }
         });
+    }
+
+    private void broadCastPlayers(TextMessage message){
+        sessions.forEach(ses -> {
+            if(ses.getIsWebPage() == false){
+                try {
+                    LOGGER.debug("SENDING ", message);
+                    ses.getWsSession().sendMessage(message);
+                } catch (IOException e) {
+                    LOGGER.error("Error occurred.", e);
+                }
+            }
+        });
+    }
+
+    private Session getMatchingSession(WebSocketSession wsSession){
+        for(Session session : sessions){
+            if(wsSession.equals(session.getWsSession())){
+                return session;
+            }
+        }
+        return null;
+    }
+
+    public List<String> getActiveSessions() {
+        List<String> names = new ArrayList<String>();
+        sessions.forEach((s) -> {
+            if(s.getName() != null){
+                names.add(s.getName());
+            }
+        });
+        return names;
     }
 }
