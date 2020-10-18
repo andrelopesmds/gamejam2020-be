@@ -11,12 +11,9 @@ public class WebSocketController {
         return "ws-broadcast";
     }
 
-    private String title = "Tooot";
-
 
     @GetMapping(value = {"/", "/index"})
     public String index() {
-        System.out.println("JAHUU");
-        return "index";
+        return "ws-broadcast";
     }
 }

@@ -16,6 +16,8 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
  
     private static final Logger LOGGER = LoggerFactory.getLogger(MyTextWebSocketHandler.class);
     
+
+    private static final String SECRET = "D#KDWDLKEWRK#WRXXXXXXXX-IMWEBPAGE";
     private final List<Session> sessions = new CopyOnWriteArrayList<>();
  
     @Override
@@ -50,10 +52,11 @@ public class MyTextWebSocketHandler extends TextWebSocketHandler {
             broadCastNewPlayers();
             return;
         }
-        else if (buffer.equals("D#KDWDLKEWRK#WRXXXXXXXX-IMWEBPAGE")){
+        //Simple secret to determine that webpage is connecting
+        else if (buffer.equals(SECRET)){
             session.setIsWebPage(true);
             return;
-        } else if (buffer.equals("WEBPAGE-REQUEST-PLAYERS") && session.getIsWebPage() == true){
+        } else if (buffer.equals("WEBPAGE-REQUEST-PLAYERS")){
             broadCastNewPlayers();
             return;
             
